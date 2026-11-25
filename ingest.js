@@ -14,9 +14,8 @@ const dry = process.argv.includes("--dry");
 const url = new URL("https://eonet.gsfc.nasa.gov/api/v3/events");
 url.searchParams.set("status", "all");
 url.searchParams.set("days", process.env.EONET_DAYS ?? "7");
-if (process.env.NASA_API_KEY) url.searchParams.set("api_key", process.env.NASA_API_KEY);
 
-const res = await fetch(url, { headers: { "user-agent": "logbook" } });
+const res = await fetch(url, { headers: { "user-agent": "eonet-events" } });
 if (!res.ok) throw new Error(`${url.origin}${url.pathname}: HTTP ${res.status}`);
 const { events } = await res.json();
 
@@ -31,13 +30,27 @@ if (dry) {
 }
 
 if (changed.length) {
-    const lb = logbook({ app: process.env.EONET_APP, token: process.env.FANGORN_TOKEN, every: 0 });
-    for (const [e] of changed) lb.log(REPO, e, { id: e.id, type: "event" });
-    const out = await lb.close(); // throws on a failed publish, so the state below only records what landed
-    for (const [e, h] of changed) seen[e.id] = h;
+    const lb = logbook({
+        app: process.env.EONET_APP, 
+        token: process.env.FANGORN_TOKEN, 
+        every: 0
+    });
+
+    for (const [e] of changed) {
+        lb.log(REPO, e, { id: e.id, type: "event" });
+    }
+
+    const out = await lb.close();
+
+    for (const [e, h] of changed) {
+        seen[e.id] = h;
+    }
+
     mkdirSync(new URL("./data", import.meta.url).pathname, { recursive: true });
     writeFileSync(STATE, JSON.stringify(seen, null, 1) + "\n");
+    
     console.log(`${new Date().toISOString()} published ${changed.length} of ${events.length} events ${JSON.stringify(out)}`);
+
 } else {
     console.log(`${new Date().toISOString()} nothing new in ${events.length} events`);
 }
