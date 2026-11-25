@@ -13,7 +13,7 @@ const dry = process.argv.includes("--dry");
 
 const url = new URL("https://eonet.gsfc.nasa.gov/api/v3/events");
 url.searchParams.set("status", "all");
-url.searchParams.set("days", process.env.EONET_DAYS ?? "7");
+url.searchParams.set("days", process.env.EONET_DAYS ?? "28");
 
 const res = await fetch(url, { headers: { "user-agent": "eonet-events" } });
 if (!res.ok) throw new Error(`${url.origin}${url.pathname}: HTTP ${res.status}`);

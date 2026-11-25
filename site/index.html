@@ -150,7 +150,9 @@ dd { margin: 0; font-variant-numeric: tabular-nums }
 <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
 <script>
 // The Fangorn indexer this page reads (its /view.json and /search). ?index=<url> points it at another one.
-const INDEX = (new URLSearchParams(location.search).get("index") ?? "https://eonet-events-sepolia.fangorn.network").replace(/\/$/, "");
+// Accepts a bare host or an indexer link such as …/mcp or …/view.json, and reduces it to the indexer's origin.
+const INDEX = ((q) => { try { return new URL(/^https?:\/\//.test(q) ? q : `https://${q}`).origin; } catch { return q; } })(
+  new URLSearchParams(location.search).get("index") ?? "https://eonet-events-sepolia.fangorn.network");
 // One spectral band per EONET category id: the color follows the category, never its rank.
 const BANDS = { wildfires: "#ff7a3d", severeStorms: "#b48cff", volcanoes: "#ff4d6d", seaLakeIce: "#7cd9ff", floods: "#3ddbd9", earthquakes: "#f7a8ff",
   drought: "#ffd166", dustHaze: "#d6b48a", landslides: "#c9a27a", snow: "#e3f2ff", tempExtremes: "#ff8fb1", waterColor: "#6ef0a0", manmade: "#a3adbf" };
