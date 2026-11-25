@@ -1,0 +1,9 @@
+{
+  "name": "eonet",
+  "private": true,
+  "type": "module",
+  "description": "NASA EONET natural events on Fangorn, through logbook",
+  "scripts": { "ingest": "node ingest.js" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "@fangorn-network/logbook": "^0.1.0" }
+}

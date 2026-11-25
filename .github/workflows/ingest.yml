@@ -1,0 +1,31 @@
+name: ingest
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write # commits data/state.json back, so the next run skips what's already published
+
+concurrency: ingest
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: node ingest.js
+        env:
+          EONET_APP: ${{ vars.EONET_APP }}
+          FANGORN_TOKEN: ${{ secrets.FANGORN_TOKEN }}
+          NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+      - name: commit state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add data/state.json 2>/dev/null || exit 0
+          git diff --cached --quiet || (git commit -m "ingest: state" && git push)
